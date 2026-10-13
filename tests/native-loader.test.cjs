@@ -1,0 +1,8 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const N=require('../extension/native-loader.js');
+function fixture(on=false){const p={on,track:on?{languageCode:'fr'}:null,calls:[],isSubtitlesOn(){return this.on;},getOption(){return this.track;},setOption(m,o,v){this.calls.push([o,v]);if(o==='track')this.track=v;},loadModule(){this.on=true;},unloadModule(){this.on=false;}};return p;}
+test('ordinary source and translation selection restore original CC off state',()=>{const p=fixture();const restore=N.select(p,{languageCode:'en',kind:'asr'},{languageCode:'zh-Hans'},()=>true);assert.equal(p.track.translationLanguage.languageCode,'zh-Hans');assert.equal(p.on,true);restore();restore();assert.equal(p.on,false);});
+test('enabled original track is restored',()=>{const p=fixture(true),before=p.track;N.select(p,{languageCode:'en'},null,()=>true)();assert.equal(p.track,before);assert.equal(p.on,true);});
+test('user intervening choice is preserved',()=>{const p=fixture(true);const restore=N.select(p,{languageCode:'en'},null,()=>true);p.track={languageCode:'de'};restore();assert.equal(p.track.languageCode,'de');});
+test('navigation does not write old track into new video',()=>{const p=fixture(true);let current=true;const restore=N.select(p,{languageCode:'en'},null,()=>current);current=false;const n=p.calls.length;restore();assert.equal(p.calls.length,n);});
+test('unsupported state fails safely without toggling native CC',()=>{const p=fixture(true);p.getOption=()=>undefined;assert.equal(N.select(p,{languageCode:'en'},null,()=>true),null);assert.deepEqual(p.calls,[]);});

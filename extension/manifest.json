@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "上下字幕 · YouTube",
+  "version": "0.4.0",
+  "description": "原文在下，简体中文在上。仅使用 YouTube 可用字幕与翻译，点击后在当前标签页启用。",
+  "minimum_chrome_version": "102",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "在当前 YouTube 视频启用 / 关闭上下字幕"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "skill": "D-AI Codex Activation",
+  "entry": "scripts/invoke.ps1",
+  "originalRequestRoute": {
+    "intent": "discuss",
+    "riskLevel": 0,
+    "status": "accepted",
+    "deliveryDirective": false
+  },
+  "localDeliveryRoute": {
+    "project": "youtube-dual-subtitles",
+    "intent": "delivery",
+    "riskLevel": 1,
+    "cliStatus": "blocked",
+    "blockedAt": "implementation",
+    "reason": "CLI classifies and hands actual implementation to the canonical Codex agent",
+    "agentExecutionDirective": {
+      "kind": "codex-agent-delivery",
+      "expectedEndpoint": "local-change",
+      "publicationAuthorityRequired": false,
+      "mergeAllowed": false
+    },
+    "consumedByCurrentAgent": true
+  },
+  "bindingChanged": false,
+  "runtimeModified": false,
+  "durableTaskCreated": false,
+  "rawInvocationRecords": "Retained privately; not distributed"
+}

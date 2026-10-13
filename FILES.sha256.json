@@ -1,0 +1,198 @@
+[
+  {
+    "file": ".gitignore",
+    "sha256": "7a93988ab98091887daa37f270f9e86376bf95f65fb84b1a196834761434fe03"
+  },
+  {
+    "file": "CHANGELOG.md",
+    "sha256": "c723272f39c9cdd331a7f9602451982a29f038d4b25222f02d75e1296691918f"
+  },
+  {
+    "file": "CHANGELOG.zh-CN.md",
+    "sha256": "5cc75b348f58f99c2d1c527361c6e9a4892541a31dbe5ad2c9c1e56f8d9940e4"
+  },
+  {
+    "file": "docs/DEVELOPMENT.md",
+    "sha256": "716da47943e09c1bc41471aae63f2d8775e78435a31b1b995f6a692ebe58d859"
+  },
+  {
+    "file": "docs/DEVELOPMENT.zh-CN.md",
+    "sha256": "321ae51ca7959468411962799e3d0064706108db890bed89fe6bed99f5428f82"
+  },
+  {
+    "file": "docs/INSTALL.md",
+    "sha256": "9dec7ca2d44a10dfaa7f298037401df2664d82f1df8d6b39055e17e7c836c131"
+  },
+  {
+    "file": "docs/INSTALL.zh-CN.md",
+    "sha256": "83fc1b0d7390e70da89615b9476d66b36c47c9c3d51a893d83b0d99dda58ce55"
+  },
+  {
+    "file": "docs/LICENSING.md",
+    "sha256": "9b1206bed714230e43f146d11b23a5bbdf35494491724351f8839081a6979ce5"
+  },
+  {
+    "file": "docs/LICENSING.zh-CN.md",
+    "sha256": "9e2b12670d6475397cc0e5dc4928b6408ec15e05826c07ba904c0a4e0f0a79a1"
+  },
+  {
+    "file": "docs/PRIVACY.md",
+    "sha256": "519dc77d53b92e466f4fce59f5d2c5a302c8823c7d8664f2e05a0e5bb85172ae"
+  },
+  {
+    "file": "docs/PRIVACY.zh-CN.md",
+    "sha256": "0ae4d6656f503a9df959cd0cbaa4529edd2c6caf1958d029e8f6fea036ac8ad7"
+  },
+  {
+    "file": "docs/ROUTING.md",
+    "sha256": "cf552feaf10dc9b04f888646fd9f3af78ff0eb5cb43137fe0c5ceb5f22f4e657"
+  },
+  {
+    "file": "docs/VALIDATION.md",
+    "sha256": "f9340b94c051d87595c0ae4934fcd2ef263d33fc8fc3e05f83e124cb5416fe9f"
+  },
+  {
+    "file": "docs/VALIDATION.zh-CN.md",
+    "sha256": "76e54c4fc42d1792106c5e34d4390612c53c707ce0cf03b37756b0cd86a5ca7b"
+  },
+  {
+    "file": "evidence/d-ai-routing.json",
+    "sha256": "005650c399df8acd07bc8fa13d6db59cb78f143edfe6e4d0eb551291162126b6"
+  },
+  {
+    "file": "evidence/dictionary-language-live.json",
+    "sha256": "58768bea5af03c8a90751c1dee6547ac61487f06840a008932aa74d02011200b"
+  },
+  {
+    "file": "evidence/ui-results.json",
+    "sha256": "f89b3f59f710487ddc3272fb849852658335b75e4abca80f6ea7b7b2e64d390a"
+  },
+  {
+    "file": "evidence/unit-results.txt",
+    "sha256": "1b04a4bc91b72bfef79fde733770573afb4cf2800b8d49244c82cde63d67ee97"
+  },
+  {
+    "file": "extension/bridge.js",
+    "sha256": "637365ccf62d61c950ea05465ec16a18dfe6f1704c531b0421651e9d0ade8c68"
+  },
+  {
+    "file": "extension/content.js",
+    "sha256": "17707aafd076eeac8778ba027b57a08f4e57a56e1e6a23cd525af188b27dacf3"
+  },
+  {
+    "file": "extension/core.js",
+    "sha256": "30ecdb29aa47366266a36e7b554deb3eb735b4d404919fe9ea7afda16a71a3c7"
+  },
+  {
+    "file": "extension/dictionary.js",
+    "sha256": "9d5ac1c6b64785c3430e5210e15cd27a8a91b715e8e93c2e2730bf207c8f409c"
+  },
+  {
+    "file": "extension/learning.js",
+    "sha256": "e317e8e4842392dde25f27c6fdbf47b47b53541529001c5f6091adb42f0749c8"
+  },
+  {
+    "file": "extension/manifest.json",
+    "sha256": "d7072c2f5603b9d7b85cab4303bb94e0e51bc18e2775f5a678bcecb6b16167a8"
+  },
+  {
+    "file": "extension/native-loader.js",
+    "sha256": "8bd05572e4200c15840e65a17c527ddaa4a06632190e99d35c53e30acfd15e45"
+  },
+  {
+    "file": "extension/playback.js",
+    "sha256": "08d546eef47fef3a71c2c86bc8ead7201f09f199414d8072ddd49c09c1ce4967"
+  },
+  {
+    "file": "extension/request-url.js",
+    "sha256": "70f215dfed9c8083362de3f48e82236b7cf568ccdbfe885ed1345b549cb57904"
+  },
+  {
+    "file": "extension/service-worker.js",
+    "sha256": "bee2b44cf51a5d778ac28b29e1da148f7b7b9cb11bdaffb0c96cf916a85e755c"
+  },
+  {
+    "file": "LICENSE",
+    "sha256": "1ac139c1b76babf310ed098728e3eb0a24a3689a2fd5427a65006feee8be5f79"
+  },
+  {
+    "file": "package.json",
+    "sha256": "ae9802fc3c1ec3d8bd4dd08726006b9f9ec013144c592e9d993be3b17ae51c13"
+  },
+  {
+    "file": "README.md",
+    "sha256": "030a58d50a787ac382a530595a92558fdaf6e03ff3c1151265c05cb49f8c183f"
+  },
+  {
+    "file": "README.zh-CN.md",
+    "sha256": "240f68a46358286f18207f937e285ecf16c09625493a5f87ba7d10585c46ae3c"
+  },
+  {
+    "file": "RELEASE_NOTES.md",
+    "sha256": "e3b2f82bec596afb15c3e984196952300bcc076290ce3f8ff113580883eaef2b"
+  },
+  {
+    "file": "RELEASE_NOTES.zh-CN.md",
+    "sha256": "c7830640597b1ec18f11e63b927ebc979314261052e8295f9ecf6f3c13d440ed"
+  },
+  {
+    "file": "scripts/build-release.cjs",
+    "sha256": "070c51c3daac2701f669079b1a5ac99d86d33625849e2b48381eb25e2c1fca5d"
+  },
+  {
+    "file": "tests/core.test.cjs",
+    "sha256": "47c486eeff7013fddb0d3331a8d794317a08e0680be698ddfd02233646928a05"
+  },
+  {
+    "file": "tests/dictionary-bilingual-live.cjs",
+    "sha256": "65a4b150fa1756508fde4427ace5c1becc5e6097e5eb935227a2cec6af2eb2f4"
+  },
+  {
+    "file": "tests/dictionary-bilingual.test.cjs",
+    "sha256": "db50d4d3057dd1ee4785376b00d97ef007b9d45534a3fcced352de43d810e9ac"
+  },
+  {
+    "file": "tests/dictionary-language-live.cjs",
+    "sha256": "e21795eed7885b042af4e54ae84df4c9ed3d505fa6344b5b8a797a174b19d4d9"
+  },
+  {
+    "file": "tests/dictionary-language.test.cjs",
+    "sha256": "de75f83d980c8a8493da25dccb523036314684e69d3f04d6362ea63e090234ab"
+  },
+  {
+    "file": "tests/dictionary-live.cjs",
+    "sha256": "97ea94178ff474d53bd1602f08eab3e87cd20b6a824c2936168cfd636f987929"
+  },
+  {
+    "file": "tests/dictionary.test.cjs",
+    "sha256": "3cb0d1b626b2d4ee63eed90f53fddde00eb37728b45823d90dd01a85a4703063"
+  },
+  {
+    "file": "tests/fixture.html",
+    "sha256": "7db1c1e62c0f7ca09c6d76fe7466a0da848d6efbda72acd4eabfed028d536d71"
+  },
+  {
+    "file": "tests/native-loader.test.cjs",
+    "sha256": "fdb9fa75d9d7eb9c0d0c3db19fd456cb2b0566c43fc2e1012b3c0db8d08a518d"
+  },
+  {
+    "file": "tests/playback.test.cjs",
+    "sha256": "85936d0729a4b4604890baafac561949e1f39b2e6430b57ae4c8a4a95b74238d"
+  },
+  {
+    "file": "tests/request-url.test.cjs",
+    "sha256": "4bc9298db49edca5124d80247ebfc0dca36728ce8425e5d1ca88509a7ed12497"
+  },
+  {
+    "file": "tests/ui.test.cjs",
+    "sha256": "23d2383162417e0d6bab1e421476d4485e62e728647eb91c0c866ea141afd3bc"
+  },
+  {
+    "file": "tests/worker.test.cjs",
+    "sha256": "494030412d62b06a746597f9491a1dfb36ce3bf818d72a2fb47ec30850618d97"
+  },
+  {
+    "file": "THIRD_PARTY_NOTICES.md",
+    "sha256": "339988c39d58d0db2e9620463a88166d9ba8f7ab73cdce6239f295427c644367"
+  }
+]

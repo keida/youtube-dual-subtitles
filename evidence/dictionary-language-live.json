@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-13T21:30:43.658Z",
+  "version": "0.4.0",
+  "scope": "Anonymous isolated Chromium on synthetic YouTube-origin page; public single-word dictionary only; no installed extension or user profile",
+  "word": "creativity",
+  "result": "PASS",
+  "browser": "156.0.8078.4",
+  "cases": {
+    "zh-Hans": {
+      "version": 3,
+      "word": "creativity",
+      "zh": {
+        "meanings": [
+          "创造力",
+          "创造",
+          "创造性"
+        ],
+        "partsOfSpeech": [
+          "noun"
+        ],
+        "language": "zh",
+        "article": "https://zh.wiktionary.org/wiki/creativity",
+        "provider": "维基词典贡献者",
+        "license": "CC BY-SA 4.0",
+        "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modified": "仅清理维基标记，未机器翻译",
+        "fetchedAt": "2026-10-13T21:30:44.544Z"
+      },
+      "en": {
+        "meanings": [
+          "The ability to use imagination to produce a novel idea or product."
+        ],
+        "partsOfSpeech": [
+          "noun"
+        ],
+        "language": "en",
+        "article": "https://en.wiktionary.org/wiki/creativity",
+        "provider": "维基词典贡献者",
+        "license": "CC BY-SA 4.0",
+        "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modified": "仅清理维基标记，未机器翻译",
+        "fetchedAt": "2026-10-13T21:30:44.858Z"
+      },
+      "issues": {
+        "zh": "",
+        "en": ""
+      },
+      "alignment": "中英文来自同一英文词的独立词条，词义顺序不一定一一对应；未机器翻译。 共同词性：名词。",
+      "targetLanguage": "zh-Hans",
+      "sourceLanguage": "en",
+      "primaryLanguage": "zh",
+      "explanationLanguage": "en",
+      "targetIssue": "",
+      "sourceIssue": ""
+    },
+    "en": {
+      "version": 3,
+      "word": "creativity",
+      "zh": null,
+      "en": {
+        "meanings": [
+          "The ability to use imagination to produce a novel idea or product."
+        ],
+        "partsOfSpeech": [
+          "noun"
+        ],
+        "language": "en",
+        "article": "https://en.wiktionary.org/wiki/creativity",
+        "provider": "维基词典贡献者",
+        "license": "CC BY-SA 4.0",
+        "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modified": "仅清理维基标记，未机器翻译",
+        "fetchedAt": "2026-10-13T21:30:45.108Z"
+      },
+      "issues": {
+        "zh": "",
+        "en": ""
+      },
+      "alignment": "英文释义同时作为英文原文解释，不生成额外翻译。",
+      "targetLanguage": "en",
+      "sourceLanguage": "en",
+      "primaryLanguage": "en",
+      "explanationLanguage": "en",
+      "targetIssue": "",
+      "sourceIssue": ""
+    },
+    "fr": {
+      "version": 3,
+      "word": "creativity",
+      "zh": null,
+      "en": {
+        "meanings": [
+          "The ability to use imagination to produce a novel idea or product."
+        ],
+        "partsOfSpeech": [
+          "noun"
+        ],
+        "language": "en",
+        "article": "https://en.wiktionary.org/wiki/creativity",
+        "provider": "维基词典贡献者",
+        "license": "CC BY-SA 4.0",
+        "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "modified": "仅清理维基标记，未机器翻译",
+        "fetchedAt": "2026-10-13T21:30:45.367Z"
+      },
+      "issues": {
+        "zh": "",
+        "en": ""
+      },
+      "alignment": "仅保留英文原文解释；目标语言词典暂不支持。",
+      "targetLanguage": "fr",
+      "sourceLanguage": "en",
+      "primaryLanguage": null,
+      "explanationLanguage": "en",
+      "targetIssue": "字幕目标 fr 的词典释义暂不支持；目前仅提供中文和英文。",
+      "sourceIssue": ""
+    }
+  },
+  "requests": [
+    {
+      "url": "https://zh.wiktionary.org/w/api.php?action=parse&page=creativity&prop=wikitext&format=json&formatversion=2&redirects=1&origin=*",
+      "hasCookie": false,
+      "hasReferer": false
+    },
+    {
+      "url": "https://en.wiktionary.org/w/api.php?action=parse&page=creativity&prop=wikitext&format=json&formatversion=2&redirects=1&origin=*",
+      "hasCookie": false,
+      "hasReferer": false
+    },
+    {
+      "url": "https://en.wiktionary.org/w/api.php?action=parse&page=creativity&prop=wikitext&format=json&formatversion=2&redirects=1&origin=*",
+      "hasCookie": false,
+      "hasReferer": false
+    },
+    {
+      "url": "https://en.wiktionary.org/w/api.php?action=parse&page=creativity&prop=wikitext&format=json&formatversion=2&redirects=1&origin=*",
+      "hasCookie": false,
+      "hasReferer": false
+    }
+  ],
+  "errors": []
+}

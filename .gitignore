@@ -1,0 +1,13 @@
+node_modules/
+artifacts/
+.env
+.env.*
+.d-ai/
+.d-ai-routing/
+.dictionary-research/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.log
+.DS_Store
