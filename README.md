@@ -1,5 +1,11 @@
 # YouTube Dual Subtitles
 
+<!-- download-counts:start -->
+[![All Release asset file downloads](https://img.shields.io/github/downloads/keida/youtube-dual-subtitles/total?label=Release%20asset%20downloads)](https://github.com/keida/youtube-dual-subtitles/releases) [![v0.4.0 plugin ZIP downloads](https://img.shields.io/github/downloads/keida/youtube-dual-subtitles/v0.4.0/YouTube-Dual-Subtitles-Extension-0.4.0.zip?label=Plugin%20ZIP%20downloads&displayAssetName=false)](https://github.com/keida/youtube-dual-subtitles/releases/tag/v0.4.0)
+
+Counts are file download events, not unique people or installations. The total includes uploaded Release assets (extension ZIP, packaged source ZIP and checksums); the plugin badge counts the v0.4.0 plugin ZIP separately. GitHub-generated Source code ZIP/tar.gz archives are outside these asset counts. Badge caching can delay updates.
+<!-- download-counts:end -->
+
 [简体中文](README.zh-CN.md) · [Downloads](https://github.com/keida/youtube-dual-subtitles/releases) · [Changelog](CHANGELOG.md)
 
 Experimental Chrome / Edge Manifest V3 extension, version 0.4.0. Original captions appear at the bottom and translated captions at the top. Each layer has independent position, font size, background, visibility and timing offset.

@@ -1,5 +1,11 @@
 # YouTube 分层字幕
 
+<!-- download-counts:start -->
+[![Release 附件总下载次数](https://img.shields.io/github/downloads/keida/youtube-dual-subtitles/total?label=Release%20asset%20downloads)](https://github.com/keida/youtube-dual-subtitles/releases) [![v0.4.0 插件 ZIP 下载次数](https://img.shields.io/github/downloads/keida/youtube-dual-subtitles/v0.4.0/YouTube-Dual-Subtitles-Extension-0.4.0.zip?label=Plugin%20ZIP%20downloads&displayAssetName=false)](https://github.com/keida/youtube-dual-subtitles/releases/tag/v0.4.0)
+
+统计的是文件下载次数，不是人数或安装量。总数包含上传的 Release 附件（插件 ZIP、打包源码 ZIP、校验和文件）；插件徽章单独统计 v0.4.0 插件 ZIP。GitHub 自动生成的 Source code ZIP/tar.gz 不计入这些附件数据。徽章缓存可能延迟更新。
+<!-- download-counts:end -->
+
 [English](README.md) · [下载](https://github.com/keida/youtube-dual-subtitles/releases) · [版本记录](CHANGELOG.zh-CN.md)
 
 Chrome / Edge Manifest V3 扩展，当前 0.4.0。原文默认在底部，译文在顶部；位置、字号、背景、显隐、时间偏移分别调整。
