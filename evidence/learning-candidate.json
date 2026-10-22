@@ -1,0 +1,88 @@
+{
+  "scope": "Real candidate learning/dictionary/core and shared vocabulary-store repository; two isolated Chromium pages, mocked dictionary/clipboard/storage transport; no network, installed extension, user profile or existing data.",
+  "cases": [
+    {
+      "name": "Two pages save distinct words through the real serialized repository without replacement",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent note/mastered updates send only changed fields; dictionary updates preserve another page note",
+      "status": "PASS"
+    },
+    {
+      "name": "Revealed review note can be cleared, while an unrevealed note survives mastered marking",
+      "status": "PASS"
+    },
+    {
+      "name": "Clipboard includes definitions, source and licence; failure is visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual candidate CSS allows real mouse selection under a user-select:none ancestor",
+      "status": "PASS"
+    },
+    {
+      "name": "Layer-specific language/context prevents a French translated word from being queried as English",
+      "status": "PASS"
+    },
+    {
+      "name": "A fresh word retains successful Chinese meanings when the English request reaches its real per-language timeout",
+      "status": "PASS"
+    },
+    {
+      "name": "Read failure blocks saving and requires a successful retry; existing words remain",
+      "status": "PASS"
+    },
+    {
+      "name": "Search and pagination reach old saved entries; refresh preserves unsaved draft text",
+      "status": "PASS"
+    },
+    {
+      "name": "Import versions 1–5 are previewed without writes; explicit merge retains existing notes and provenance",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid version, unsafe source, invalid entry, oversized file and too many entries cannot write",
+      "status": "PASS"
+    },
+    {
+      "name": "In-flight merge locks cancel and file changes; forced events cannot suppress the completion result",
+      "status": "PASS"
+    },
+    {
+      "name": "Single-item deletion requires the named confirmation, and cancellation preserves the record",
+      "status": "PASS"
+    },
+    {
+      "name": "JSON version 5 and CSV export preserve notes, context, timestamp, definitions and source/licence; replay remains intact",
+      "status": "PASS"
+    },
+    {
+      "name": "A legal 5000-entry vocabulary exports a >4 MiB JSON backup that restores into empty fixture storage",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "browser": "156.0.8078.4",
+  "selection": {
+    "method": "actual mouse drag",
+    "text": "测试中文释义",
+    "ancestorUserSelect": "none",
+    "paragraphUserSelect": "text",
+    "screenshot": "learning-candidate-selected.png"
+  },
+  "backupBoundary": {
+    "entries": 5000,
+    "storedBytes": 3556671,
+    "exportedBytes": 4315710,
+    "restoredIntoEmptyFixture": true,
+    "resultingRevision": 1
+  },
+  "pass": true,
+  "generatedAt": "2026-10-22T20:02:45.292Z",
+  "sourceSha256": {
+    "learning.js": "1a8100732ba30ace6f43c17a70117e6879833d92a58ac902360ddd783f95fd3c",
+    "vocabulary-store.js": "1a332ddd210d531354de6e9ea2dc030141eec93c9734d3da01dc42d88f0642bf",
+    "dictionary.js": "4fac48c5b93502748a8f97ef9ca1c3e9e8afcb525eb7e3c4730039a076c0908c"
+  }
+}

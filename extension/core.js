@@ -30,7 +30,8 @@
   function preferences(input = {}) {
     return { targetLanguage: typeof input.targetLanguage === "string" && /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,8}){0,2}$/.test(input.targetLanguage) ? input.targetLanguage : "zh-Hans",
       swap: input.swap === true, topVisible: input.topVisible !== false, bottomVisible: input.bottomVisible !== false,
-      sourceOffset: clamp(input.sourceOffset, -30, 30, 0), translationOffset: clamp(input.translationOffset, -30, 30, 0), pauseAtEnd: input.pauseAtEnd === true };
+      sourceOffset: clamp(input.sourceOffset, -30, 30, 0), translationOffset: clamp(input.translationOffset, -30, 30, 0), pauseAtEnd: input.pauseAtEnd === true,
+      uiLanguage: ['auto','zh-CN','en'].includes(input.uiLanguage) ? input.uiLanguage : 'auto' };
   }
   function chooseTracks(meta, selected, target = "zh-Hans") {
     const tracks = meta.tracks || [];
@@ -86,7 +87,19 @@
     while (lo <= hi) { const mid = (lo + hi) >> 1; if (cues[mid].start <= time) { found = mid; lo = mid + 1; } else hi = mid - 1; }
     return found;
   }
-  function cueAt(cues, time) { const found = cueIndex(cues, time); return found >= 0 && time < cues[found].end ? cues[found].text : ""; }
+  // Caption arrays are immutable after parsing/import. Prefix maxima let us find
+  // overlapping active cues without scanning every prior cue on each frame.
+  const cueEnds = new WeakMap();
+  function activeCuesAt(cues, time) {
+    const found=cueIndex(cues,time);if(found<0)return [];
+    let cached=cueEnds.get(cues);
+    if(!cached||cached.length!==cues.length){const ends=[];let end=-Infinity;for(const cue of cues){end=Math.max(end,cue.end);ends.push(end);}cached={length:cues.length,ends};cueEnds.set(cues,cached);}
+    const active=[];
+    for(let i=found;i>=0&&cached.ends[i]>time;i--)if(cues[i].start<=time&&time<cues[i].end)active.push(cues[i]);
+    return active.reverse();
+  }
+  function cueAt(cues, time) { return [...new Set(activeCuesAt(cues,time).map(c=>c.text))].join('\n'); }
+  function cueRangeAt(cues,time) { const active=activeCuesAt(cues,time);if(!active.length)return null;return active.reduce((range,cue)=>({start:Math.min(range.start,cue.start),end:Math.max(range.end,cue.end)}),{start:Infinity,end:-Infinity}); }
   function timestamp(value) {
     const match = /^(?:(\d{2,}):)?(\d{2}):(\d{2})[.,](\d{3})$/.exec(value);
     if (!match || Number(match[2]) > 59 || Number(match[3]) > 59) throw new Error("字幕时间格式无效。");
@@ -134,7 +147,7 @@
     }
     return {get,set,delete:remove,clear(){entries.clear();bytes=0;}};
   }
-  const api = { defaults, settings, preferences, videoId, simplified, chooseTracks, parseCaptions, jsonCues, cueIndex, cueAt, parseFile, formatTime, exportFile, captionCache };
+  const api = { defaults, settings, preferences, videoId, simplified, chooseTracks, parseCaptions, jsonCues, cueIndex, cueAt, activeCuesAt, cueRangeAt, parseFile, formatTime, exportFile, captionCache };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.YTDSCore = api;
 })(globalThis);

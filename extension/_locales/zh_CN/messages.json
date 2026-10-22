@@ -1,0 +1,5 @@
+{
+  "extName": { "message": "上下字幕 · YouTube" },
+  "description": { "message": "分层显示原文与译文，支持生词与逐句学习。仅使用 YouTube 可用字幕，点击后在当前视频启用。" },
+  "actionTitle": { "message": "在当前 YouTube 视频启用 / 关闭上下字幕" }
+}

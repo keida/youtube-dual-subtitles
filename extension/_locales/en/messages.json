@@ -1,0 +1,5 @@
+{
+  "extName": { "message": "YouTube Dual Subtitles" },
+  "description": { "message": "Source and translated captions, vocabulary and sentence practice. Uses available YouTube captions; enabled with a click." },
+  "actionTitle": { "message": "Enable / disable dual subtitles on this YouTube video" }
+}

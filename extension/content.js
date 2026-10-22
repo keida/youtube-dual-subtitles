@@ -1,13 +1,15 @@
 (() => {
   "use strict";
-  const C = globalThis.YTDSCore;
+  const C = globalThis.YTDSCore, I = globalThis.YTDSI18n;
   const SESSION = "__YTDS_SESSION_V1__", CHANNEL = "YTDS_V1";
   if (globalThis[SESSION]) return;
   let active = true, player, video, id = "", generation = 0, frame = 0, watchTimer = 0, saveTimer = 0;
   let config = C.settings(), prefs = C.preferences(), meta, sourceCues = [], translationCues = [], ready = false, preview = false;
   let replayEnd = null, lastIndex = -1, listPage = 0;
   const cachedCaptions = C.captionCache(), sourceSelections = new Map();
-  let failedTrack = null, currentChoice = null, nativeRetryTimer = 0, nativeRetries = 0, consumedSignal = 0, locallyImported = false;
+  let currentChoice = null, nativeRetryTimer = 0, nativeRetries = 0, consumedSignal = 0;
+  const failedTracks = new Set(), imports = { source: null, translation: null }, importSequence = { source: 0, translation: 0 };
+  let stopI18n = null, displayedIndex = -2, checkCaptionOverflow = true, fullCaptionText = "", lastPanel = "settings";
   const nativeSignals = [];
   let drag = null, writes = Promise.resolve();
   const pending = new Map();
@@ -43,14 +45,21 @@
       #word-panel {position:absolute;left:12px;top:48px;width:310px;max-width:calc(100% - 24px);max-height:calc(100% - 65px);overflow:auto;pointer-events:auto;background:#151b23;border:1px solid #495462;border-radius:12px;padding:14px;font-size:13px;}
       #word-panel textarea {width:100%;min-height:60px;background:#26313e;color:white;border:1px solid #59626e;padding:7px;font:inherit;} #word-panel a {color:#85dacb;}
       #word-context {white-space:pre-wrap;} #vocabulary button {margin:4px;} #word-title {font-size:22px;}
+      #word-panel, #word-panel p, #word-panel h2, #word-panel h3, #word-panel a, #word-panel textarea, #full-caption-text {user-select:text;-webkit-user-select:text;}
+      #caption-full {position:absolute;left:12px;bottom:10px;pointer-events:auto;font-size:12px;}
+      #full-caption {position:absolute;inset:48px 12px 12px;background:#151b23;border:1px solid #495462;border-radius:12px;padding:14px;overflow:auto;pointer-events:auto;}
+      #full-caption-text {white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.6;}
     </style>
     <div class="caption" id="top" aria-label="顶部简体中文字幕"></div>
     <div class="caption" id="bottom" aria-label="底部原文字幕"></div>
     <div class="toolbar"><button id="settings" aria-expanded="false">上下字幕 · 设置</button><button id="close" aria-label="关闭并恢复原生字幕">×</button></div>
     <div id="notice" role="status" hidden></div>
+    <button id="caption-full" hidden>查看完整字幕</button>
+    <section id="full-caption" aria-label="完整字幕" hidden><button id="full-caption-close">关闭完整字幕</button><div id="full-caption-text"></div></section>
     <section id="panel" aria-label="上下字幕设置" hidden>
       <h2>原文在下，中文在上</h2>
       <p id="status" role="status">正在读取字幕轨…</p>
+      <label><span>界面语言</span><select id="uiLanguage" aria-label="界面语言"><option value="auto">跟随浏览器</option><option value="zh-CN">简体中文</option><option value="en">English</option></select></label>
       <label><span>原文字幕轨</span><select id="source" aria-label="原文字幕轨"></select></label>
       <label><span>译文语言</span><select id="target" aria-label="译文语言"><option value="zh-Hans">简体中文</option></select></label>
       <label><span>原译上下互换</span><input id="swap" type="checkbox"></label>
@@ -70,7 +79,8 @@
       <div class="actions"><button id="listPrevious">上一页</button><button id="listCurrent">定位当前句</button><button id="listNext">下一页</button></div>
       <label><span>导入原文</span><input id="importSource" type="file" accept=".srt,.vtt"></label>
       <label><span>导入译文</span><input id="importTranslation" type="file" accept=".srt,.vtt"></label>
-      <p>文件仅用于当前视频，不上传或自动翻译。</p>
+      <p>文件仅用于当前视频，不上传或自动翻译；重新获取保留导入，切换视频会清除。</p>
+      <button id="clear-imports" hidden>清除导入字幕</button>
       <label><span>导出对象</span><select id="exportTrack"><option value="source">原文</option><option value="translation">译文</option></select></label>
       <label><span>导出格式</span><select id="exportFormat"><option value="srt">SRT</option><option value="vtt">VTT</option></select></label>
       <button id="export">导出已有字幕（含偏移）</button>
@@ -79,7 +89,7 @@
       <p>快捷键：Alt+←/→ 跳句，Alt+R 重播，Alt+S 设置，Alt+X 关闭。输入框内不触发。</p>
       <div class="actions"><button id="retry">重新获取</button><button id="reset">恢复默认布局</button><button id="disable">关闭并恢复原生字幕</button></div>
       <p id="save-status">设置仅存本浏览器；只有主动收藏才保存原句。</p>
-      <p id="build">版本 0.4.0 · 语言联动预览版</p>
+      <p id="build">版本 0.5.0 · 本地候选版</p>
     </section>`;
   const $ = s => shadow.querySelector(s), top = $("#top"), bottom = $("#bottom"), panel = $("#panel"), status = $("#status"), notice = $("#notice");
   for (const key of ["top", "bottom"]) {
@@ -103,6 +113,7 @@
     $("#fields").append(fieldset);
   }
   function setStatus(text, showNotice = false) {
+    if (imports.source || imports.translation) text += " 已保留本地导入字幕；可用“清除导入字幕”恢复网络字幕。";
     status.textContent = text; notice.textContent = text; notice.hidden = !showNotice || !panel.hidden;
   }
   function syncControls() {
@@ -114,6 +125,7 @@
     }
   }
   function syncPreferences() {
+    $("#uiLanguage").value = prefs.uiLanguage || "auto";
     $("#panel h2").textContent=prefs.swap?"原文在上，译文在下":"原文在下，译文在上";
     top.setAttribute("aria-label",prefs.swap?"顶部原文字幕":"顶部译文字幕");bottom.setAttribute("aria-label",prefs.swap?"底部译文字幕":"底部原文字幕");
     for(const key of ["swap","topVisible","bottomVisible","pauseAtEnd"])$(`#${key}`).checked=prefs[key];
@@ -121,6 +133,7 @@
     top.hidden=!prefs.topVisible;bottom.hidden=!prefs.bottomVisible;
   }
   function applyLayout() {
+    checkCaptionOverflow = true;
     syncPreferences();
     const height = player?.clientHeight || 360;
     for (const [key, element] of [["top", top], ["bottom", bottom]]) {
@@ -128,6 +141,7 @@
       element.style.cssText = `left:${s.x}%;top:${s.y}%;transform:translate(-50%,${key === "top" ? "0" : "-100%"});max-width:${Math.min(s.x, 100-s.x)*2-4}%;max-height:${key === "top" ? Math.min(22, 45-s.y) : Math.min(22, s.y-55)}%;font-size:${Math.min(s.size, Math.max(12, height*.07))}px;background:rgba(${rgb},${s.opacity/100});`;
       element.classList.toggle("editing", preview);
     }
+    enforcePanelWidth();
   }
   function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 180); }
   function save() {
@@ -183,23 +197,25 @@
   nativeStyle.textContent = '#movie_player[data-ytds-native-hidden="true"] .ytp-caption-window-container {visibility:hidden!important;}';
   document.head.append(nativeStyle);
   function restoreNative() { player?.removeAttribute("data-ytds-native-hidden"); }
-  function clearCues() { ready = false; replayEnd = null; pauseController.cancel(); lastIndex = -1; sourceCues = []; translationCues = []; top.textContent = ""; bottom.textContent = ""; listPage = 0; renderList(); restoreNative(); }
+  function clearImports() { imports.source = imports.translation = null; importSequence.source++; importSequence.translation++; $("#clear-imports").hidden = true; }
+  function clearCues(preserveImports = false, retained = null) { replayEnd = null; pauseController.cancel(); lastIndex = -1; displayedIndex = -2; sourceCues = preserveImports && imports.source ? imports.source.cues : retained?.source || []; translationCues = preserveImports && imports.translation ? imports.translation.cues : retained?.translation || []; ready = !!(sourceCues.length || translationCues.length); if(!retained){top.textContent = ""; bottom.textContent = "";} listPage = 0; renderList(); restoreNative(); }
   function trackKey(track) { return JSON.stringify([track?.languageCode,track?.kind||"",track?.name]); }
   function trackLabel(track) { return track.name+(track.kind==='asr'&&!/auto|自动生成/i.test(track.name)?'（自动生成）':''); }
   function recoveryHint(label) { return `请在原生 CC 选择“${label}”一次；${nativeRetries<3?'正常加载后将自动恢复。':'自动恢复已达本次上限，加载后请点“重新获取”。'}`; }
   function neededSignal(signal) {
-    if(!meta||!currentChoice||!failedTrack)return false;
+    if(!meta||!currentChoice||!failedTracks.size)return false;
     const source=meta.tracks[currentChoice.source],target=meta.tracks[currentChoice.translation];
-    if(failedTrack==="source")return signal.lang===source.languageCode&&signal.kind===(source.kind||"")&&!signal.tlang;
+    if(failedTracks.has("source")&&!imports.source&&signal.lang===source.languageCode&&signal.kind===(source.kind||"")&&!signal.tlang)return true;
+    if(!failedTracks.has("translation")||imports.translation)return false;
     if(currentChoice.mode==="auto")return signal.lang===source.languageCode&&signal.kind===(source.kind||"")&&signal.tlang===prefs.targetLanguage;
     return signal.lang===target?.languageCode&&signal.kind===(target?.kind||"")&&!signal.tlang;
   }
   function scheduleNativeRecovery() {
-    if(!active||!failedTrack||locallyImported||nativeRetryTimer||nativeRetries>=3)return;
+    if(!active||!failedTracks.size||nativeRetryTimer||nativeRetries>=3)return;
     const signal=[...nativeSignals].reverse().find(x=>x.sequence>consumedSignal&&neededSignal(x));if(!signal)return;
     const mine=generation,forId=id,selected=currentChoice.source;
     nativeRetryTimer=setTimeout(()=>{
-      nativeRetryTimer=0;if(!active||mine!==generation||forId!==id||locallyImported)return;
+      nativeRetryTimer=0;if(!active||mine!==generation||forId!==id)return;
       consumedSignal=signal.sequence;nativeRetries++;load(selected,{automatic:true});
     },250);
   }
@@ -207,11 +223,20 @@
     return value?.id === id && Array.isArray(value.tracks) && value.tracks.length <= 100 && value.tracks.every(t => typeof t.languageCode === "string" && typeof t.name === "string") && Array.isArray(value.languages);
   }
   async function load(selected,{force=false,automatic=false}={}) {
+    // Automatic recovery retries failed tracks, retaining successful data only
+    // for this video and the same source/translation selection. Manual reloads
+    // still fetch afresh (while preserving explicitly imported local tracks).
+    const retained=automatic&&meta?.id===id&&currentChoice?{
+      sourceKey:trackKey(meta.tracks[currentChoice.source]),translationKey:trackKey(meta.tracks[currentChoice.translation]),
+      mode:currentChoice.mode,target:prefs.targetLanguage,
+      source:failedTracks.has("source")?[]:sourceCues,translation:failedTracks.has("translation")?[]:translationCues,
+      failed:[...failedTracks]
+    }:null;
     const mine = ++generation;
-    clearTimeout(nativeRetryTimer);nativeRetryTimer=0;failedTrack=null;currentChoice=null;locallyImported=false;
+    clearTimeout(nativeRetryTimer);nativeRetryTimer=0;failedTracks.clear();if(!retained)currentChoice=null;
     if(!automatic)nativeRetries=0;
-    cancelRequests(); clearCues(); meta = null;
-    $("#source").replaceChildren();
+    cancelRequests(); clearCues(true,retained);
+    if(!retained){meta=null;$("#source").replaceChildren();}
     if (!id || !player || !video) { setStatus("请打开 YouTube 普通视频页面。", true); return; }
     setStatus("正在读取 YouTube 可用字幕…", true);
     try {
@@ -238,7 +263,15 @@
       const remembered=sourceSelections.get(id);
       if(selected===undefined&&remembered&&Date.now()-remembered.at<15*60*1000){const index=meta.tracks.findIndex(t=>trackKey(t)===remembered.track);if(index>=0)selected=index;}
       const choice = C.chooseTracks(meta, selected, prefs.targetLanguage);currentChoice=choice;
+      if(retained){
+        const sameSource=retained.sourceKey===trackKey(meta.tracks[choice.source]);
+        if(!sameSource)retained.source=[];
+        if(!sameSource||retained.target!==prefs.targetLanguage||retained.mode!==choice.mode||retained.translationKey!==trackKey(meta.tracks[choice.translation]))retained.translation=[];
+        sourceCues=imports.source?.cues||retained.source;translationCues=imports.translation?.cues||retained.translation;
+        ready=!!(sourceCues.length||translationCues.length);
+      }
       sourceSelections.delete(id);sourceSelections.set(id,{track:trackKey(meta.tracks[choice.source]),at:Date.now()});while(sourceSelections.size>3)sourceSelections.delete(sourceSelections.keys().next().value);
+      $("#source").replaceChildren();
       for (const [i, t] of meta.tracks.entries()) {
         const option = document.createElement("option"); option.value = String(i);
         option.textContent = `${t.name}${t.kind === "asr" ? "（自动生成）" : ""}`; $("#source").append(option);
@@ -248,47 +281,60 @@
       if(force)cachedCaptions.delete(cacheKey);
       const completeStatus=choice.mode==="auto"?"已启用：原文 / YouTube 自动翻译（可能不准确）。":choice.mode==="same"?`原文已是${targetName}；上下显示相同原文，无需翻译。`:`已启用：原文 / 视频已有${targetName}字幕。`;
       const saved=cachedCaptions.get(cacheKey);
-      if(saved){sourceCues=saved.source;translationCues=saved.translation;ready=true;renderList();pauseController.refresh();setStatus(completeStatus+"（本次会话缓存）");return;}
-      failedTrack="loading-source";
+      if(saved){sourceCues=imports.source?.cues||saved.source;translationCues=imports.translation?.cues||saved.translation;ready=true;renderList();pauseController.refresh();setStatus(completeStatus+"（本次会话缓存）");return;}
       let sourceError=null;
       try{
-        const raw=await request("captions",{index:choice.source});
-        if(!active||mine!==generation)return;
-        sourceCues=C.parseCaptions(raw);
+        if (!imports.source && !retained?.source.length) {
+          const raw=await request("captions",{index:choice.source});
+          if(!active||mine!==generation)return;
+          sourceCues=imports.source?.cues||C.parseCaptions(raw);
+        } else sourceCues=imports.source?.cues||retained.source;
         if(!sourceCues.length)throw new Error("未返回可用原文字幕。");
-        ready=true;failedTrack=null;pauseController.refresh();renderList();
+        ready=true;failedTracks.delete("source");pauseController.refresh();renderList();
       }catch(error){
         if(!active||mine!==generation)return;
-        sourceError=error;sourceCues=[];failedTrack="source";
+        if(imports.source){sourceCues=imports.source.cues;ready=true;failedTracks.delete("source");}
+        else {sourceError=error;sourceCues=[];failedTracks.add("source");}
       }
+      const sourceFailed=()=>!!sourceError&&!imports.source;
       const sourceFailure=()=>`原文获取失败：${sourceError.message} 原文层保持空白；${recoveryHint(trackLabel(meta.tracks[choice.source]))}`;
+      if(imports.translation){
+        translationCues=imports.translation.cues;ready=true;failedTracks.delete("translation");renderList();
+        setStatus((sourceFailed()?sourceFailure():"原文可用；")+"译文使用本地文件。",sourceFailed());scheduleNativeRecovery();return;
+      }
+      if(retained?.translation.length){
+        translationCues=retained.translation;ready=true;failedTracks.delete("translation");
+        if(!sourceFailed()&&!imports.source)cachedCaptions.set(cacheKey,{source:sourceCues,translation:translationCues});
+        renderList();setStatus(sourceFailed()?sourceFailure()+" 译文可用；原生字幕仍可见。":completeStatus,sourceFailed());scheduleNativeRecovery();return;
+      }
       if(choice.mode==="unavailable"){
-        setStatus((sourceError?sourceFailure():"原文可用；")+`YouTube 未提供可用的${targetName}翻译。`,true);scheduleNativeRecovery();return;
+        setStatus((sourceFailed()?sourceFailure():"原文可用；")+`YouTube 未提供可用的${targetName}翻译。`,true);scheduleNativeRecovery();return;
       }
       if(choice.mode==="same"){
-        if(sourceError){setStatus(sourceFailure(),true);scheduleNativeRecovery();return;}
-        translationCues=sourceCues;cachedCaptions.set(cacheKey,{source:sourceCues,translation:translationCues});renderList();setStatus(completeStatus);return;
+        if(sourceFailed()){failedTracks.add("translation");setStatus(sourceFailure(),true);scheduleNativeRecovery();return;}
+        translationCues=sourceCues;if(!imports.source)cachedCaptions.set(cacheKey,{source:sourceCues,translation:translationCues});renderList();setStatus(completeStatus);return;
       }
       // The two tracks are independent: a failed source must not prevent a
       // translated track supplied by YouTube from being attempted and shown.
-      setStatus((sourceError?"原文未获取；":"原文已就绪；")+`正在独立获取${targetName}字幕…`,true);
+      setStatus((sourceFailed()?"原文未获取；":"原文已就绪；")+`正在独立获取${targetName}字幕…`,true);
       try{
         const translated=await request("captions",{index:choice.translation,translate:choice.mode==="auto"?prefs.targetLanguage:""});
         if(!active||mine!==generation)return;
-        translationCues=C.parseCaptions(translated);
+        translationCues=imports.translation?.cues||C.parseCaptions(translated);
         if(!translationCues.length)throw new Error("YouTube 未返回可用译文字幕。");
-        ready=true;failedTrack=sourceError?"source":null;
-        if(!sourceError)cachedCaptions.set(cacheKey,{source:sourceCues,translation:translationCues});
-        renderList();setStatus(sourceError?sourceFailure()+" 译文可用；原生字幕仍可见。":completeStatus,!!sourceError);scheduleNativeRecovery();
+        ready=true;failedTracks.delete("translation");
+        if(!sourceFailed()&&!imports.source&&!imports.translation)cachedCaptions.set(cacheKey,{source:sourceCues,translation:translationCues});
+        renderList();setStatus(sourceFailed()?sourceFailure()+" 译文可用；原生字幕仍可见。":completeStatus,sourceFailed());scheduleNativeRecovery();
       }catch(error){
         if(active&&mine===generation){
-          translationCues=[];failedTrack=sourceError?"source":"translation";
+          if(imports.translation){translationCues=imports.translation.cues;ready=true;failedTracks.delete("translation");renderList();setStatus((sourceFailed()?sourceFailure():"原文可用；")+"译文使用本地文件。",sourceFailed());scheduleNativeRecovery();return;}
+          translationCues=[];failedTracks.add("translation");
           const label=choice.mode==="auto"?targetName:trackLabel(meta.tracks[choice.translation]);
-          setStatus((sourceError?sourceFailure():"原文可用；")+`译文获取失败：${error.message} 译文层保持空白。${recoveryHint(label)}`,true);scheduleNativeRecovery();
+          setStatus((sourceFailed()?sourceFailure():"原文可用；")+`译文获取失败：${error.message} 译文层保持空白。${recoveryHint(label)}`,true);scheduleNativeRecovery();
         }
       }
     } catch (error) {
-      if (active && mine === generation) { const canRecover=failedTrack==="loading-source"&&currentChoice;clearCues();failedTrack=canRecover?"source":null;setStatus(error.message+(canRecover?' '+recoveryHint(trackLabel(meta.tracks[currentChoice.source])):''),true);scheduleNativeRecovery(); }
+      if (active && mine === generation) { clearCues(true,retained);if(retained)for(const track of retained.failed)failedTracks.add(track);setStatus(error.message,true);scheduleNativeRecovery(); }
     }
   }
   function tick() {
@@ -298,12 +344,19 @@
     if (sourceCues.length && ready && !ad) player?.setAttribute("data-ytds-native-hidden", "true"); else restoreNative();
     const now = video?.currentTime || 0, sourceTime = now-prefs.sourceOffset;
     const original = ready && !ad ? C.cueAt(sourceCues, sourceTime) : "", translated = ready && !ad ? C.cueAt(translationCues, now-prefs.translationOffset) : "";
-    const index=C.cueIndex(sourceCues,sourceTime),cue=sourceCues[index];
-    const originalRange=original&&cue?{id,start:Math.max(0,cue.start+prefs.sourceOffset),end:cue.end+prefs.sourceOffset}:null;
-    learning.render(top, preview ? "顶部 · 字幕位置示例" : prefs.swap ? original : translated, !preview,preview?null:prefs.swap?originalRange:null);
-    learning.render(bottom, preview ? "底部 · 字幕位置示例" : prefs.swap ? translated : original, !preview,preview?null:prefs.swap?null:originalRange);
+    const rangeAt=(cues,time,offset,language)=>{const cue=C.cueRangeAt?.(cues,time)||cues[C.cueIndex(cues,time)];return cue&&time<cue.end?{id,start:Math.max(0,cue.start+offset),end:cue.end+offset,language}:null;};
+    const originalRange=original?rangeAt(sourceCues,sourceTime,prefs.sourceOffset,imports.source?"und":meta?.tracks?.[Number($("#source").value)]?.languageCode||"und"):null;
+    const translatedRange=translated?rangeAt(translationCues,now-prefs.translationOffset,prefs.translationOffset,prefs.targetLanguage):null;
+    const topText=preview ? (I?.t("顶部 · 字幕位置示例") || "顶部 · 字幕位置示例") : prefs.swap ? original : translated;
+    const bottomText=preview ? (I?.t("底部 · 字幕位置示例") || "底部 · 字幕位置示例") : prefs.swap ? translated : original;
+    const changed=top.textContent!==topText||bottom.textContent!==bottomText;
+    learning.render(top, topText, !preview,preview?null:prefs.swap?originalRange:translatedRange);
+    learning.render(bottom, bottomText, !preview,preview?null:prefs.swap?translatedRange:originalRange);
+    const nextFull=[original,translated].filter(Boolean).join("\n\n");
+    if(fullCaptionText!==nextFull){fullCaptionText=nextFull;$("#full-caption-text").textContent=fullCaptionText;}
+    if(changed||checkCaptionOverflow){checkCaptionOverflow=false;$("#caption-full").hidden=preview||![top,bottom].some(element=>!element.hidden&&element.textContent&&(element.scrollHeight>element.clientHeight+1||element.scrollWidth>element.clientWidth+1));}
     lastIndex = C.cueIndex(sourceCues, sourceTime);
-    for (const row of $("#sentences").children) row.classList.toggle("current", Number(row.dataset.index) === lastIndex);
+    if(displayedIndex!==lastIndex){displayedIndex=lastIndex;for (const row of $("#sentences").children) row.classList.toggle("current", Number(row.dataset.index) === lastIndex);}
     frame = requestAnimationFrame(tick);
   }
   const resize = new ResizeObserver(applyLayout);
@@ -313,7 +366,7 @@
     const nextId = C.videoId(location.href), nextPlayer = document.getElementById("movie_player"), nextVideo = nextPlayer?.querySelector("video");
     if (nextId !== id || nextPlayer !== player || nextVideo !== video) {
       restoreNative(); resize.disconnect();
-      if(nextId!==id){nativeSignals.length=0;consumedSignal=0;nativeRetries=0;}
+      if(nextId!==id){nativeSignals.length=0;consumedSignal=0;nativeRetries=0;clearImports();$("#full-caption").hidden=true;}
       player = nextPlayer; video = nextVideo; id = nextId;
       pauseController.bind(video);
       if (player && id) { player.append(host); resize.observe(player); applyLayout(); }
@@ -323,14 +376,21 @@
   }
   function togglePanel() {
     panel.hidden = !panel.hidden; $("#settings").setAttribute("aria-expanded", String(!panel.hidden));
+    if(!panel.hidden){lastPanel="settings";if(player?.clientWidth<680)learning.hide();$("#full-caption").hidden=true;}
     notice.hidden = true;
     if (panel.hidden) { preview = false; $("#drag").checked = false; applyLayout(); }
   }
   $("#settings").addEventListener("click", togglePanel);
+  function hideSettings() { if(!panel.hidden)togglePanel();$("#full-caption").hidden=true; }
+  function wordOpened() { lastPanel="words";$("#full-caption").hidden=true;if(player?.clientWidth<680&&!panel.hidden)togglePanel(); }
+  function enforcePanelWidth() { if(player?.clientWidth<680&&!panel.hidden&&!$("#word-panel")?.hidden){if(lastPanel==="words")hideSettings();else learning.hide();} }
+  $("#caption-full").addEventListener("click",()=>{hideSettings();learning.hide();$("#full-caption").hidden=false;});
+  $("#full-caption-close").addEventListener("click",()=>$("#full-caption").hidden=true);
   $("#close").addEventListener("click", stop); $("#disable").addEventListener("click", stop);
   $("#retry").addEventListener("click", () => load(Number($("#source").value),{force:true}));
   $("#source").addEventListener("change", () => load(Number($("#source").value)));
-  $("#reset").addEventListener("click", () => { const oldTarget=prefs.targetLanguage; config = C.settings(); prefs=C.preferences();replayEnd=null;pauseController.refresh();syncControls(); applyLayout(); queueSave(); if(oldTarget!==prefs.targetLanguage){learning.languageChanged();load();} });
+  $("#reset").addEventListener("click", () => { config = C.settings();syncControls();applyLayout();queueSave(); });
+  $("#uiLanguage").addEventListener("change",()=>{prefs.uiLanguage=$("#uiLanguage").value;I?.setPreference(prefs.uiLanguage);learning.languageChanged?.();queueSave();});
   $("#drag").addEventListener("change", () => { preview = $("#drag").checked; applyLayout(); });
   for (const [key, element] of [["top", top], ["bottom", bottom]]) {
     element.addEventListener("pointerdown", e => {
@@ -356,6 +416,7 @@
   }
   function navigate(step) { const index=C.cueIndex(sourceCues,(video?.currentTime||0)-prefs.sourceOffset);jump(Math.max(0,Math.min(sourceCues.length-1,index+step))); }
   function renderList() {
+    displayedIndex=-2;
     $("#sentences").replaceChildren();listPage=Math.max(0,Math.min(listPage,Math.max(0,Math.ceil(sourceCues.length/80)-1)));
     for(let i=listPage*80;i<Math.min(sourceCues.length,(listPage+1)*80);i++) {
       const cue=sourceCues[i],button=document.createElement("button");button.dataset.index=i;
@@ -373,25 +434,27 @@
   $("#listPrevious").addEventListener("click",()=>{listPage--;renderList();});$("#listNext").addEventListener("click",()=>{listPage++;renderList();});
   $("#listCurrent").addEventListener("click",()=>{listPage=Math.floor(Math.max(0,C.cueIndex(sourceCues,(video?.currentTime||0)-prefs.sourceOffset))/80);renderList();});
   for(const [control,isSource] of [["importSource",true],["importTranslation",false]]) $(`#${control}`).addEventListener("change",async()=>{
-    const file=$(`#${control}`).files[0],importedId=id,mine=++generation;cancelRequests();replayEnd=null;pauseController.cancel();clearTimeout(nativeRetryTimer);nativeRetryTimer=0;failedTrack=null;
+    const track=isSource?"source":"translation",file=$(`#${control}`).files[0],importedId=id,mine=++importSequence[track];
     try {
       if(!file||file.size>8*1024*1024)throw new Error("请选择不超过 8 MiB 的 SRT 或 VTT 文件。");
-      const cues=C.parseFile(await file.text(),file.name);if(!active||importedId!==id||mine!==generation)return;
-      if(isSource)sourceCues=cues;else translationCues=cues;ready=true;locallyImported=true;pauseController.refresh();renderList();
-      setStatus(`已导入${isSource?"原文":"译文"}：${file.name}（用户文件，语言和翻译内容未验证）。切换视频或重新获取会清除导入。`);
+      const cues=C.parseFile(await file.text(),file.name);if(!active||importedId!==id||mine!==importSequence[track])return;
+      imports[track]={cues,name:file.name};failedTracks.delete(track);$("#clear-imports").hidden=false;
+      if(isSource)sourceCues=cues;else translationCues=cues;ready=true;replayEnd=null;pauseController.refresh();renderList();
+      setStatus(`已导入${isSource?"原文":"译文"}：${file.name}（用户文件，语言和翻译内容未验证）。切换视频会清除导入。`);scheduleNativeRecovery();
     }catch(error){if(active&&importedId===id)setStatus(error.message,true);}finally{$(`#${control}`).value="";}
   });
+  $("#clear-imports").addEventListener("click",()=>{clearImports();load(Number($("#source").value),{force:true});});
   const blobUrls=new Set();
   function download(text,name,type) {const url=URL.createObjectURL(new Blob([text],{type}));blobUrls.add(url);const a=document.createElement("a");a.href=url;a.download=name;shadow.append(a);a.click();a.remove();}
   $("#export").addEventListener("click",()=>{
     try {const original=$("#exportTrack").value==="source",format=$("#exportFormat").value;download(C.exportFile(original?sourceCues:translationCues,format,original?prefs.sourceOffset:prefs.translationOffset),`YouTube-${id}-${original?"original":"translation"}.${format}`,"text/plain;charset=utf-8");}
     catch(error){setStatus(error.message,true);}
   });
-  const learning=globalThis.YTDSLearning(shadow,{context:()=>({text:C.cueAt(sourceCues,(video?.currentTime||0)-prefs.sourceOffset),id,at:video?.currentTime||0,language:meta?.tracks?.[Number($("#source").value)]?.languageCode||"und",targetLanguage:prefs.targetLanguage}),pause:()=>video?.pause(),jump:saved=>{if(saved.videoId===id&&video){video.currentTime=saved.at;video.play().catch(()=>setStatus("请点击播放器播放。",true));}},download,status:setStatus});
+  const learning=globalThis.YTDSLearning(shadow,{context:()=>({text:C.cueAt(sourceCues,(video?.currentTime||0)-prefs.sourceOffset),id,at:video?.currentTime||0,language:imports.source?"und":meta?.tracks?.[Number($("#source").value)]?.languageCode||"und",targetLanguage:prefs.targetLanguage}),onOpen:wordOpened,pause:()=>video?.pause(),jump:saved=>{if(saved.videoId===id&&video){video.currentTime=saved.at;video.play().catch(()=>setStatus("请点击播放器播放。",true));}},download,status:setStatus});
   const pauseController=globalThis.YTDSPlayback.controller({video:()=>video,cues:()=>sourceCues,offset:()=>prefs.sourceOffset,enabled:()=>prefs.pauseAtEnd,replay:()=>replayEnd,clearReplay:()=>replayEnd=null,blocked:()=>!ready||!!player?.classList.contains("ad-showing")||!!player?.classList.contains("ad-interrupting")});
   $("#words").addEventListener("click",learning.show);
   function escape(e) {
-    if(e.key==="Escape"){if(!panel.hidden)togglePanel();learning.hide();return;}
+    if(e.key==="Escape"){if(!panel.hidden)togglePanel();learning.hide();$("#full-caption").hidden=true;return;}
     if(!e.altKey||e.ctrlKey||e.metaKey||e.repeat||e.composedPath().some(node=>node instanceof HTMLElement&&(node.matches("input,textarea,select")||node.isContentEditable)))return;
     const key=e.key.toLowerCase();if(!["arrowleft","arrowright","r","s","x"].includes(key))return;e.preventDefault();e.stopPropagation();
     if(key==="arrowleft")navigate(-1);else if(key==="arrowright")navigate(1);else if(key==="r")$("#replay").click();else if(key==="s")togglePanel();else stop();
@@ -410,10 +473,10 @@
     document.removeEventListener("fullscreenchange", applyLayout);
     document.removeEventListener("keydown", escape);
     window.removeEventListener("pagehide", stop);
-    chrome.runtime.onMessage.removeListener(runtimeMessage);
+    try { chrome.runtime.onMessage.removeListener(runtimeMessage); } catch { /* Extension reload must not interrupt DOM cleanup. */ }
     if (saveTimer) save();
     restoreNative(); host.remove(); nativeStyle.remove();
-    learning.dispose();blobUrls.forEach(url=>URL.revokeObjectURL(url));blobUrls.clear();
+    stopI18n?.();learning.dispose();blobUrls.forEach(url=>URL.revokeObjectURL(url));blobUrls.clear();clearImports();
     sourceCues = []; translationCues = []; meta = null;
     delete globalThis[SESSION];
   }
@@ -428,6 +491,7 @@
     try { const saved = await chrome.storage.local.get(["layout","preferences"]); if (active) {config = C.settings(saved.layout);prefs=C.preferences(saved.preferences);} }
     catch { if (active) $("#save-status").textContent = "读取设置失败，使用默认布局。"; }
     if (!active) return;
+    I?.setPreference(prefs.uiLanguage||"auto");stopI18n=I?.observe(shadow)||null;
     syncControls();syncPreferences();checkPage();tick();watchTimer = setInterval(checkPage, 300);
   })();
 })();

@@ -2,6 +2,17 @@
 
 Earlier versions were local deliveries. Their release dates were not formally recorded; capabilities and test counts below come from preserved ZIP manifests and evidence. No retroactive Git tags, public releases or installed-browser passes are implied.
 
+## 0.5.0 — experimental pre-release
+
+- Serialize vocabulary writes in the background, reread storage per operation and patch fields; stop writes after failed reads. Preserve unrelated fields across tabs.
+- Selectable dictionary text and definition-copy buttons with attribution/licence; independent language timeouts preserve partial or saved results.
+- Independent caption recovery with bounded normal native CC reload, failed-URL exclusion, and imports protected from late network responses.
+- Save empty notes, retain all active overlapping caption text, and reset only layer appearance.
+- Browser-following / Simplified Chinese / English interface. Narrow-player panel handling and clipped-caption full-text view.
+- Vocabulary search, 50-entry pagination, confirmed single deletion, JSON version-5 export and previewed additive restore for versions 1–5. Existing duplicates remain unchanged; limits are 16 MiB per backup file and 4 MiB / 5000 entries for new normalized storage.
+- Regression checks cover existing offsets, navigation, replay and original sentence/time retention. Completed results and limitations: [validation](docs/VALIDATION.md).
+- Experimental pre-release packaging of the validated candidate; no automatic replacement of existing installations. Real YouTube/fullscreen/autoplay/browser-restart and installed MV3 integration acceptance is NOT RUN.
+
 ## 0.4.0 — experimental pre-release
 
 - Dictionary primary language follows the selected subtitle target; English source explanation retained. English target is deduplicated; unsupported target/source languages are explicit.

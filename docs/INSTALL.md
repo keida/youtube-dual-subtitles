@@ -1,12 +1,30 @@
-# Install / update
+# Review, install and update
 
-1. Download YouTube-Dual-Subtitles-Extension-0.4.0.zip from Releases and extract it to a permanent folder.
-2. Chrome: chrome://extensions. Edge: edge://extensions. Manually enable Developer mode and select Load unpacked; choose the extension folder containing manifest.json. Installation and permissions remain under your control.
-3. Open an accessible www.youtube.com/watch video and click the extension icon. The Settings footer should show version 0.4.0.
-4. Settings selects the source track and subtitle target. Original captions default to bottom, target captions to top. Drag mode shows position examples; closing Settings restores actual captions.
-5. Click English words to pause and query definitions. The primary dictionary language follows the subtitle target; unsupported targets are labelled explicitly. Save notes deliberately.
-6. Close with ×, the disable button, or the toolbar icon. The overlay, observers and timers are removed; temporary native CC changes are restored.
+This folder contains the **0.5.0 experimental pre-release**. Downloading or unpacking it does not install, reload or replace a working extension, and does not overwrite existing vocabulary. There is no automatic upgrade from 0.4.0.
 
-For an update, keep the same extension identity and folder, replace its files, reload its existing extension card, refresh YouTube and enable it again. Uninstalling the extension can remove saved data. Export vocabulary before changes when needed. Existing vocabulary formats are read without an automatic network query.
+## Review first
 
-Ordinary same-page video navigation is supported. A full page refresh requires another toolbar click. If retrieval fails, follow the visible native CC / retry instructions. No captions or unavailable translations cannot be fabricated. Native YouTube fullscreen remains a real-world acceptance item. Supports ordinary watch pages; not Shorts, live streams, embedded/mobile pages or video-element-only fullscreen.
+1. Use the [v0.5.0 pre-release page](https://github.com/keida/youtube-dual-subtitles/releases/tag/v0.5.0) for the extension ZIP and checksums. Extract `YouTube-Dual-Subtitles-0.5.0-candidate-extension.zip` to a separate folder. The `extension` subfolder contains `manifest.json`.
+2. Read the candidate notes and [validation report](VALIDATION.md). Compare the checksums supplied with the package.
+3. Keep the current 0.4.0 installation and its files intact. Open its vocabulary panel and export a current JSON backup before any later change.
+4. Decide separately whether to install the candidate. Replacement of the working installation requires user confirmation.
+
+## After an installation decision
+
+Installation and extension-management actions are manual. For a separate test browser profile, use the browser's developer extension loader and select the candidate's `extension` folder. That profile has its own storage; its vocabulary is not automatically copied from the working profile.
+
+For an approved update to the existing installation, retain its extension identity and original files for rollback. Reload that same extension only after the confirmed replacement, then refresh every YouTube tab that had the old version enabled before clicking the toolbar icon again. Old 0.4.0 content scripts must not remain active alongside the new background writer, because they still save whole vocabulary snapshots. Do not uninstall simply to update: uninstalling may remove local data.
+
+On an ordinary accessible `www.youtube.com/watch` page, open the extension's Settings and check its version footer. Seeing 0.5.0 in a downloaded manifest alone does not confirm that the browser loaded it. Another extension, such as Language Reactor, is not evidence that this extension is running.
+
+## Using the candidate
+
+- Set Interface language to Follow browser, Simplified Chinese or English. Follow browser reads browser UI language, not the OS directly.
+- Select a source caption track and translation target. Available captions and translations come from YouTube.
+- Automatic recovery retries failed tracks while retaining successful data for the same video and track selection. Manual Reload fetches network captions afresh; local imports remain. If automatic retrieval still fails, use normal native CC controls and the visible retry guidance.
+- Importing SRT/VTT affects only this video. Retry keeps imports; Clear imported captions removes them. Navigating to another video clears them.
+- Click a supported English word to pause and query definitions. Select definition text or use its Copy button; copying includes source/licence. Save notes deliberately.
+- Search the vocabulary and use page controls. Deletion requires a second confirmation. Restore accepts JSON, previews it, and writes only after Merge restore. Existing duplicates are kept.
+- Reset layout resets layer appearance only; it retains language preferences, timing offsets and other learning preferences.
+
+Closing the overlay removes its listeners/timers and restores temporary native CC changes. A full page reload requires another toolbar click. Ordinary watch pages are the supported surface; Shorts, live streams, embeds, mobile pages and video-element-only fullscreen are outside it. Native YouTube fullscreen still requires real acceptance testing.

@@ -1,0 +1,61 @@
+{
+  "method": "Node VM plus isolated headless Chromium; synthetic network/player/storage",
+  "externalNetworkRequests": 0,
+  "installedExtensionAcceptance": false,
+  "results": [
+    {
+      "name": "reject-403",
+      "status": "PASS",
+      "nativeReloads": 1,
+      "rejectedUrlFetchCount": 1
+    },
+    {
+      "name": "reject-410",
+      "status": "PASS",
+      "nativeReloads": 1,
+      "rejectedUrlFetchCount": 1
+    },
+    {
+      "name": "reject-empty",
+      "status": "PASS",
+      "nativeReloads": 1,
+      "rejectedUrlFetchCount": 1
+    },
+    {
+      "name": "bounded-native-refresh",
+      "status": "PASS"
+    },
+    {
+      "name": "independent-recovery-signals",
+      "status": "PASS"
+    },
+    {
+      "name": "layout-only reset preserves language, offsets and pause",
+      "status": "PASS"
+    },
+    {
+      "name": "import translation while source loads; retry preserves import; clear and navigation restore native tracks",
+      "status": "PASS"
+    },
+    {
+      "name": "late native translation cannot overwrite imported translation; close cancels outstanding original",
+      "status": "PASS"
+    },
+    {
+      "name": "both failed tracks recover translation independently after a matching native signal",
+      "status": "PASS"
+    },
+    {
+      "name": "automatic recovery preserves the successful track when the opposite request now fails",
+      "status": "PASS"
+    },
+    {
+      "name": "offset navigation and word timestamps survive; each caption supplies its own language",
+      "status": "PASS"
+    },
+    {
+      "name": "long subtitles expose full text and cards remain selectable with one visible panel",
+      "status": "PASS"
+    }
+  ]
+}

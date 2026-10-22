@@ -9,11 +9,13 @@
   function currentId() { return location.pathname === "/watch" ? new URL(location.href).searchParams.get("v") || "" : ""; }
   let observedVideo = currentId();
   const observedRequests = [];
+  const rejectedURLs = new Set();
   let signalSequence = 0;
   function collectPlayerRequests(entries) {
     const id = currentId();
-    if (id !== observedVideo) { observedVideo = id; observedRequests.length = 0; }
+    if (id !== observedVideo) { observedVideo = id; observedRequests.length = 0; rejectedURLs.clear(); }
     for (const entry of entries) {
+      if (rejectedURLs.has(entry.name)) continue;
       if (!(entry.decodedBodySize > 0) || typeof entry.responseStatus==='number' && entry.responseStatus!==0 && entry.responseStatus!==200) continue;
       let u; try { u = new URL(entry.name); } catch { continue; }
       if (u.origin !== "https://www.youtube.com" || u.pathname !== "/api/timedtext" || u.searchParams.get("v") !== id) continue;
@@ -65,10 +67,12 @@
     let observed = globalThis.YTDSRequestURL?.nativeURL(track,id,translate,observedRequests);
     const controller = new AbortController();
     controllers.add(controller);
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const started = Date.now(), timeout = setTimeout(() => controller.abort(), 12000);
     let restore;
-    try {
-      if(!observed){
+    function releaseNative() { if (restore) { restore(); nativeRestores.delete(restore); restore = null; } }
+    function assertCurrent() { if (controller.signal.aborted || disposed || currentId() !== id) throw new DOMException("Aborted", "AbortError"); }
+    async function primeNative() {
+        assertCurrent(); releaseNative();
         const player=document.getElementById("movie_player");
         const target=translate?r.translationLanguages.find(t=>t.languageCode===translate):null;
         restore=globalThis.YTDSNativeLoader?.select(player,track,target,()=>currentId()===id && document.getElementById("movie_player")===player);
@@ -76,19 +80,19 @@
           nativeRestores.add(restore);
           // Wait for the player's own successful request, including on an unseen
           // autoplay video. Do not reuse another video's or another track's token.
-          const deadline=Date.now()+9000;
+          const deadline=Math.min(Date.now()+9000,started+10500);
           while(!observed && Date.now()<deadline){
-            if(controller.signal.aborted || currentId()!==id)throw new DOMException("Aborted","AbortError");
+            assertCurrent();
             collectPlayerRequests(performance.getEntriesByType("resource"));
             observed=globalThis.YTDSRequestURL?.nativeURL(track,id,translate,observedRequests);
             if(!observed)await new Promise(resolve=>setTimeout(resolve,100));
           }
         }
-      }
-      // Fetch only metadata's URL or the complete exact first-party request.
-      const requestURL=observed || url.href;
+    }
+    async function readResponse(requestURL) {
+      assertCurrent();
       const response = await fetch(requestURL, { signal: controller.signal, credentials: "same-origin", redirect: "error" });
-      if (!response.ok) throw new Error(`字幕获取失败（HTTP ${response.status}）。请使用原生字幕。`);
+      if (!response.ok) { const error = new Error(`字幕获取失败（HTTP ${response.status}）。请使用原生字幕。`); error.refreshNative = response.status === 403 || response.status === 410; throw error; }
       if (Number(response.headers.get("content-length")) > 8 * 1024 * 1024) throw new Error("字幕数据过大，MVP 暂不支持。");
       // Bound decoded data while streaming rather than trusting a response header.
       const reader = response.body?.getReader();
@@ -103,13 +107,33 @@
         text += decoder.decode(item.value, { stream: true });
       }
       text += decoder.decode();
-      if (!text.trim()) throw new Error(translate ? "YouTube 未返回翻译字幕。" : "YouTube 未返回字幕内容。");
+      if (!text.trim()) { const error = new Error(translate ? "YouTube 未返回翻译字幕。" : "YouTube 未返回字幕内容。"); error.refreshNative = true; throw error; }
       return text;
+    }
+    try {
+      if (!observed) await primeNative();
+      let lastError;
+      // One recovery only. Keep the rejected exact URL excluded from subsequent
+      // Resource Timing scans; never repair or transplant opaque query data.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const requestURL = observed || (attempt === 0 && !rejectedURLs.has(url.href) ? url.href : null);
+        if (!requestURL) throw lastError || new Error("未取得新的原生字幕地址，请正常选择 CC 后重试。");
+        try { return await readResponse(requestURL); }
+        catch (error) {
+          if (!error.refreshNative) throw error;
+          rejectedURLs.add(requestURL);
+          const stale = observedRequests.findIndex(entry => entry.name === requestURL);
+          if (stale >= 0) observedRequests.splice(stale, 1);
+          lastError = error; observed = null;
+          if (attempt === 1) throw error;
+          await primeNative();
+        }
+      }
     } catch (error) {
       if (error.name === "AbortError") throw new Error("字幕请求超时或已取消，请重试。");
       if (error instanceof TypeError) throw new Error("字幕获取被网络或页面策略阻止，请使用原生字幕。");
       throw error;
-    } finally { clearTimeout(timeout); controllers.delete(controller);if(restore){restore();nativeRestores.delete(restore);} }
+    } finally { clearTimeout(timeout); controllers.delete(controller);releaseNative(); }
   }
   async function onMessage(event) {
     const m = event.data;
@@ -132,6 +156,7 @@
     nativeRestores.forEach(f=>f());nativeRestores.clear();
     resourceObserver.disconnect();
     observedRequests.length = 0;
+    rejectedURLs.clear();
     if (window[KEY]?.dispose === dispose) delete window[KEY];
   }
   window[KEY] = { dispose };

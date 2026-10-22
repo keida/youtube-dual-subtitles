@@ -101,21 +101,32 @@
     const explanationLanguage=/^en(?:-[a-z]{2,8})?$/i.test(source)?'en':null;
     return {targetLanguage:target,sourceLanguage:source,primaryLanguage,explanationLanguage,targetIssue:primaryLanguage?'':`字幕目标 ${target} 的词典释义暂不支持；目前仅提供中文和英文。`,sourceIssue:explanationLanguage?'':`原文语言 ${source} 暂不支持查词；目前仅解析英文词条，不把其他语言同形词当作英文。`};
   }
-  function languageName(code){try{return new Intl.DisplayNames(['zh-Hans'],{type:'language'}).of(code)||code;}catch{return code;}}
-  async function lookupFor(word,{targetLanguage='zh-Hans',sourceLanguage='en',fetchFn=root.fetch.bind(root),signal}={}){
+  function languageName(code){try{return new Intl.DisplayNames([root.YTDSI18n?.getLanguage?.()||'zh-Hans'],{type:'language'}).of(code)||code;}catch{return code;}}
+  async function languageRequest(word,{language,fetchFn,signal,timeoutMs}){
+    if(signal?.aborted)throw new DOMException('Aborted','AbortError');
+    const controller=new AbortController();let timer,onAbort;
+    const deadline=new Promise((_,reject)=>{
+      onAbort=()=>{const error=new DOMException('Aborted','AbortError');reject(error);controller.abort(error);};
+      signal?.addEventListener('abort',onAbort,{once:true});
+      timer=setTimeout(()=>{const error=new DOMException('Dictionary language request timed out','TimeoutError');reject(error);controller.abort(error);},Math.min(15000,Math.max(1,Number(timeoutMs)||5000)));
+    });
+    try{return await Promise.race([lookup(word,{fetchFn,signal:controller.signal,languages:[language]}),deadline]);}
+    finally{clearTimeout(timer);signal?.removeEventListener('abort',onAbort);}
+  }
+  async function lookupFor(word,{targetLanguage='zh-Hans',sourceLanguage='en',fetchFn=root.fetch.bind(root),signal,timeoutMs=5000}={}){
     const policy=selection({targetLanguage,sourceLanguage}),result={version:3,word:String(word).slice(0,200),zh:null,en:null,issues:{zh:'',en:''},...policy,alignment};
     if(!policy.explanationLanguage)return storedFor(result);
     const value=term(word);result.word=value;
     for(const language of new Set([policy.primaryLanguage,policy.explanationLanguage].filter(Boolean))){
       if(signal?.aborted)throw new DOMException('Aborted','AbortError');
       try{
-        const entry=await lookup(value,{fetchFn,signal,languages:[language]});
+        const entry=await languageRequest(value,{language,fetchFn,signal,timeoutMs});
         const title=decodeURIComponent(new URL(entry.article).pathname.slice('/wiki/'.length));
         if(term(title)!==value)throw new Error('词条重定向至不同单词，未作为本词释义。');
         const meanings=entry.meanings.filter(text=>language==='zh'?/\p{Script=Han}/u.test(text):/[A-Za-z]{2}/.test(text));
         if(!meanings.length)throw new Error(language==='zh'?'未找到可读取的中文释义。':'未找到可读取的英文解释。');
         result[language]={...entry,meanings};
-      }catch(error){if(error.name==='AbortError')throw error;result.issues[language]=String(error.message).slice(0,300);}
+      }catch(error){if(error.name==='AbortError'||signal?.aborted)throw new DOMException('Aborted','AbortError');result.issues[language]=error.name==='TimeoutError'?'此语言词典查询超时，已保留其他可用释义。':String(error.message).slice(0,300);}
     }
     result.alignment=alignmentFor(result.zh,result.en);return storedFor(result);
   }

@@ -1,0 +1,107 @@
+{
+  "version": "0.5.0",
+  "kind": "pre-publication validation snapshot",
+  "validatedAt": "2026-10-22T13:37:10.4379905Z",
+  "environment": {
+    "os": "Windows",
+    "node": "26.7.0",
+    "chromium": "156.0.8078.4"
+  },
+  "commands": [
+    {
+      "skipped": 0,
+      "tests": 80,
+      "exitCode": 0,
+      "command": "npm test",
+      "pass": 80,
+      "fail": 0
+    },
+    {
+      "command": "npm run test:ui",
+      "pass": 24,
+      "exitCode": 0,
+      "fail": 0,
+      "scenarioGroups": 24
+    },
+    {
+      "skipped": 0,
+      "exitCode": 0,
+      "command": "npm run test:candidate",
+      "nodeTestNodes": 20,
+      "pass": 20,
+      "fail": 0
+    }
+  ],
+  "candidateSuites": {
+    "captionBrowserGroups": 7,
+    "learningGroups": 15,
+    "i18nTests": 6,
+    "captionVM": 5
+  },
+  "methods": {
+    "selection": "actual mouse drag beneath user-select:none ancestor",
+    "installedExtensionAcceptance": false,
+    "clipboard": "mocked success and rejection",
+    "storageTransport": "synthetic with actual repository implementation",
+    "realUserProfileUsed": false,
+    "externalNetworkTraffic": false
+  },
+  "largeBackup": {
+    "entries": 5000,
+    "storedBytes": 3556671,
+    "exportedBytes": 4315710,
+    "restoredIntoEmptyFixture": true,
+    "resultingRevision": 1
+  },
+  "independentReview": {
+    "issuesClosed": 3,
+    "issuesFound": 3,
+    "independentCaptionReproduction": "PASS"
+  },
+  "versions": {
+    "originalExtensionFilesCompared": 10,
+    "browserLoaded": "NOT VERIFIED",
+    "originalExtensionFilesChanged": 0,
+    "candidate": "0.5.0",
+    "originalProject": "0.4.0"
+  },
+  "notRun": [
+    "Live YouTube caption retrieval and synchronization",
+    "Actual MV3 extension background/content-world integration",
+    "Installed extension concurrent tab writes",
+    "Native YouTube fullscreen",
+    "Natural next-video autoplay",
+    "Browser restart persistence",
+    "Long/background/multiple-speed playback accuracy",
+    "System clipboard",
+    "Linux / Edge / other browser versions / CI"
+  ],
+  "installationChanged": false,
+  "sourceSha256": {
+    "extension/_locales/zh_CN/messages.json": "1643d888756180289875d166a24a9f9681a8c4c8f0f7602f80fa323cd850fbf8",
+    "extension/native-loader.js": "8bd05572e4200c15840e65a17c527ddaa4a06632190e99d35c53e30acfd15e45",
+    "extension/learning.js": "1a8100732ba30ace6f43c17a70117e6879833d92a58ac902360ddd783f95fd3c",
+    "extension/request-url.js": "70f215dfed9c8083362de3f48e82236b7cf568ccdbfe885ed1345b549cb57904",
+    "extension/vocabulary-store.js": "1a332ddd210d531354de6e9ea2dc030141eec93c9734d3da01dc42d88f0642bf",
+    "extension/_locales/en/messages.json": "3a33e6cb9e52268f284c1e58df893713f746e550961f9b008544c767a439881f",
+    "extension/playback.js": "08d546eef47fef3a71c2c86bc8ead7201f09f199414d8072ddd49c09c1ce4967",
+    "extension/content.js": "9780e29fee49a87993e5ae97a86221a94cb1eda1bd92f9d96005d6fd67294c29",
+    "extension/bridge.js": "aec52107fa63558e4056cbacaecc3f3af0a80c373e7d8484b377a4fe6c20577e",
+    "extension/manifest.json": "c26d860922958a920ab21af9624edf70089c9bff504bbee0539fecf078740d17",
+    "extension/core.js": "a82a5fd90caae9e9cfe9be57799851eb5553ff07a85d949aad57d2edf7ab7d6a",
+    "extension/i18n.js": "889e45ea560ad42e3ed5021ec8e4c010ef85df6a514804e98aad50e88adce952",
+    "extension/service-worker.js": "c6548b8ce0c36288233f6cc9bba0b73e83d7c32653b36e757ecb8202af614865",
+    "extension/dictionary.js": "4fac48c5b93502748a8f97ef9ca1c3e9e8afcb525eb7e3c4730039a076c0908c"
+  },
+  "releasePreparation": {
+    "testRerunAt": "2026-10-22T20:02:45.292Z",
+    "codeMatchesValidatedCandidate": true,
+    "unitTests": 80,
+    "existingUiGroups": 24,
+    "candidateTestNodes": 20,
+    "allCommandsExitCode": 0,
+    "publicationStatus": "not published at preparation time",
+    "runtimeInstallationUnchanged": true
+  },
+  "githubPublishedAtValidation": false
+}

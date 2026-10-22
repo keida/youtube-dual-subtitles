@@ -1,11 +1,13 @@
 {
   "name": "youtube-dual-subtitles-mvp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "无构建依赖的 YouTube 上下字幕扩展",
   "scripts": {
-    "test": "node --test tests/core.test.cjs tests/worker.test.cjs tests/request-url.test.cjs tests/playback.test.cjs tests/dictionary.test.cjs tests/native-loader.test.cjs tests/dictionary-bilingual.test.cjs tests/dictionary-language.test.cjs",
-    "test:ui": "node tests/ui.test.cjs"
+    "test": "node --test tests/core.test.cjs tests/worker.test.cjs tests/request-url.test.cjs tests/playback.test.cjs tests/dictionary.test.cjs tests/native-loader.test.cjs tests/dictionary-bilingual.test.cjs tests/dictionary-language.test.cjs tests/candidate-core.test.cjs tests/vocabulary-store.test.cjs",
+    "test:ui": "node tests/ui.test.cjs",
+    "test:candidate": "node --test --test-concurrency=1 tests/i18n.test.cjs tests/caption-candidate.test.cjs tests/learning-candidate.test.cjs",
+    "build:candidate": "node scripts/build-candidate.cjs"
   },
   "devDependencies": {
     "playwright-core": "1.64.0"
