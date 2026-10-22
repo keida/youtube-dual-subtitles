@@ -16,7 +16,13 @@ Experimental Chrome / Edge Manifest V3 extension, version 0.4.0. Original captio
 
 Download the extension ZIP from Releases, extract it, and manually load its extension folder through your browser's extension management page. No build is required. Updates should preserve the existing extension identity and data: replace its files, reload the extension, refresh YouTube, and click the toolbar icon. See [installation](docs/INSTALL.md).
 
+## Documentation
+
+[Usage and language guide](docs/GUIDE.md) · [Installation](docs/INSTALL.md) · [Privacy](docs/PRIVACY.md) · [Licensing](docs/LICENSING.md) · [Validation](docs/VALIDATION.md) · [Development](docs/DEVELOPMENT.md)
+
 ## Language selection
+
+**The interface is fixed Simplified Chinese. There is no interface language selector or automatic switch based on computer/browser language.** The initial subtitle target is Simplified Chinese (zh-Hans), with saved local preferences taking precedence. See the [guide](docs/GUIDE.md) for defaults and saved preferences.
 
 Choose the source caption track and translated-caption target in Settings. Subtitle languages depend on the tracks and translations that YouTube supplies for the current accessible video.
 
